@@ -245,6 +245,12 @@ proc_maps_report (Dwfl *dwfl, FILE *f, GElf_Addr sysinfo_ehdr, pid_t pid)
 	}
 
       char *file = line + nread + strspn (line + nread, " \t");
+
+      size_t file_len = strlen(file) + 11 /* len("/proc//root") / + 10 / len(MAX_INT) / + 1 / NUL */;
+      char *ns_file = malloc(sizeof(char) * file_len);
+      snprintf(ns_file, file_len, "/proc/%d/root%s", pid, file);
+      file = ns_file;
+
       if (file[0] != '/' || (ino == 0 && dmajor == 0 && dminor == 0))
 	/* This line doesn't indicate a file mapping.  */
 	continue;
@@ -267,7 +273,7 @@ proc_maps_report (Dwfl *dwfl, FILE *f, GElf_Addr sysinfo_ehdr, pid_t pid)
 	    goto bad_report;
 	  low = start;
 	  high = end;
-	  last_file = strdup (file);
+	  last_file = file;
 	  last_ino = ino;
 	  last_dmajor = dmajor;
 	  last_dminor = dminor;
