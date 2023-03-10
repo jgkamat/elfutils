@@ -44,6 +44,10 @@
 void
 try_split_file (Dwarf_CU *cu, const char *dwo_path)
 {
+  if (strcmp(dwo_path, "/home/jay/Code/tmp/test/test.dwo") == 0) {
+    printf("Overriding path to dwp?\n");
+    dwo_path = "/home/jay/Code/tmp/test/a.out.dwp";
+  }
   int split_fd = open (dwo_path, O_RDONLY);
   if (split_fd != -1)
     {

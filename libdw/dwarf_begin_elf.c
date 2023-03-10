@@ -112,7 +112,9 @@ scn_dwarf_type (Dwarf *result, size_t shstrndx, Elf_Scn *scn)
       else if (startswith (scnname, ".debug_") || startswith (scnname, ".zdebug_"))
 	{
 	  size_t len = strlen (scnname);
-	  if (strcmp (scnname + len - 4, ".dwo") == 0)
+	  if (strcmp (scnname + len - 4, ".dwo") == 0
+	      || strcmp(scnname, ".debug_cu_index") == 0
+	      || strcmp(scnname, ".debug_tu_index") == 0)
 	    return TYPE_DWO;
 	  else
 	    return TYPE_PLAIN;
