@@ -67,7 +67,9 @@ static const char dwarf_scnnames[IDX_last][19] =
   [IDX_debug_macro] = ".debug_macro",
   [IDX_debug_ranges] = ".debug_ranges",
   [IDX_debug_rnglists] = ".debug_rnglists",
-  [IDX_gnu_debugaltlink] = ".gnu_debugaltlink"
+  [IDX_gnu_debugaltlink] = ".gnu_debugaltlink",
+  [IDX_debug_cu_index] = ".debug_cu_index",
+  [IDX_debug_tu_index] = ".debug_tu_index"
 };
 #define ndwarf_scnnames (sizeof (dwarf_scnnames) / sizeof (dwarf_scnnames[0]))
 
@@ -92,7 +94,9 @@ static const enum string_section_index scn_to_string_section_idx[IDX_last] =
   [IDX_debug_macro] = STR_SCN_IDX_last,
   [IDX_debug_ranges] = STR_SCN_IDX_last,
   [IDX_debug_rnglists] = STR_SCN_IDX_last,
-  [IDX_gnu_debugaltlink] = STR_SCN_IDX_last
+  [IDX_gnu_debugaltlink] = STR_SCN_IDX_last,
+  [IDX_debug_cu_index] = STR_SCN_IDX_last,
+  [IDX_debug_tu_index] = STR_SCN_IDX_last
 };
 
 static enum dwarf_type
@@ -187,7 +191,7 @@ check_section (Dwarf *result, size_t shstrndx, Elf_Scn *scn, bool inscngrp)
 	      if (result->type == TYPE_PLAIN)
 		break;
 	    }
-	  else if (result->type == TYPE_DWO)
+	  if (result->type == TYPE_DWO)
 	    break;
 	}
       else if (scnname[0] == '.' && scnname[1] == 'z'

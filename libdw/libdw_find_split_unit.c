@@ -44,9 +44,9 @@
 void
 try_split_file (Dwarf_CU *cu, const char *dwo_path)
 {
-  if (strcmp(dwo_path, "/home/jay/Code/tmp/test/test.dwo") == 0) {
-    printf("Overriding path to dwp?\n");
-    dwo_path = "/home/jay/Code/tmp/test/a.out.dwp";
+  if (strcmp(dwo_path, "/home/jgkamat/Sync/testdebug/test2.dwo") == 0) {
+	  printf("Overriding path to dwp: %s \n", dwo_path);
+	  dwo_path = "/home/jgkamat/Sync/testdebug/a.out.dwp";
   }
   int split_fd = open (dwo_path, O_RDONLY);
   if (split_fd != -1)
@@ -54,10 +54,37 @@ try_split_file (Dwarf_CU *cu, const char *dwo_path)
       Dwarf *split_dwarf = dwarf_begin (split_fd, DWARF_C_READ);
       if (split_dwarf != NULL)
 	{
+
+		// Try to grab dwp sections
+		if (split_dwarf->sectiondata[IDX_debug_cu_index] != NULL){
+			uint32_t* header = (uint32_t*) split_dwarf->sectiondata[IDX_debug_cu_index]->d_buf;
+			uint32_t dwp_version = header[0];
+			uint32_t columns = header[1];
+			uint32_t units = header[2];
+			uint32_t slots = header[3];
+			printf("DWP DEBUG: %d %d %d %d\n", dwp_version, columns, units, slots);
+
+			uint64_t* hts = (uint64_t*)(split_dwarf->sectiondata[IDX_debug_cu_index]->d_buf + 16);
+			uint64_t mask = (slots - 1);
+			uint64_t hash = cu->unit_id8 & mask;
+			uint64_t hash_prime = ((cu->unit_id8 >> 32) & mask) | 1;
+
+			while (!(hts[hash] == 0x0 || hts[hash] == cu->unit_id8)) {
+				// assert(hash < slots);
+				hash = (hash + hash_prime) % slots;
+			}
+			if (hts[hash] == cu->unit_id8) {
+				// found our gold!
+				printf("Match found in ht, index: %ld\n", hash);
+			}
+		}
+
+
 	  Dwarf_CU *split = NULL;
 	  while (dwarf_get_units (split_dwarf, split, &split,
 				  NULL, NULL, NULL, NULL) == 0)
 	    {
+			printf("Split: 0x%lx\n", split->unit_id8);
 	      if (split->unit_type == DW_UT_split_compile
 		  && cu->unit_id8 == split->unit_id8)
 		{

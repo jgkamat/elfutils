@@ -83,6 +83,8 @@ enum
     IDX_debug_ranges,
     IDX_debug_rnglists,
     IDX_gnu_debugaltlink,
+    IDX_debug_cu_index,
+    IDX_debug_tu_index,
     IDX_last
   };
 
