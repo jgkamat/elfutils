@@ -40,14 +40,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <glob.h>
 
 void
 try_split_file (Dwarf_CU *cu, const char *dwo_path)
 {
-  if (strcmp(dwo_path, "/home/jgkamat/Sync/testdebug/test2.dwo") == 0 || true) {
-	  printf("Overriding path to dwp: %s \n", dwo_path);
-	  dwo_path = "/home/jgkamat/Sync/testdebug/a.out.dwp";
-  }
   int split_fd = open (dwo_path, O_RDONLY);
   if (split_fd != -1)
     {
@@ -181,6 +178,22 @@ __libdw_find_split_unit (Dwarf_CU *cu)
 	      try_split_file (cu, dwo_path);
 	      free (dwo_path);
 	    }
+
+	  if (cu->split == (Dwarf_CU *) -1) {
+	    glob_t glob_result;
+	    char dwpglob[PATH_MAX];
+	    strcpy(dwpglob, debugdir);
+	    strcat(dwpglob, "*.dwp");
+	    int ret = glob(dwpglob, 0, NULL, &glob_result);
+
+	    if(ret == 0) {
+	      for(size_t i = 0; i < glob_result.gl_pathc; i++) {
+		try_split_file (cu, glob_result.gl_pathv[i]);
+	      }
+	    }
+	    globfree(&glob_result);
+	  }
+
 
 	  if (cu->split == (Dwarf_CU *) -1)
 	    {
