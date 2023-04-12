@@ -75,7 +75,30 @@ try_split_file (Dwarf_CU *cu, const char *dwo_path)
 			}
 			if (hts[hash] == cu->unit_id8) {
 				// found our gold!
-				printf("Match found in ht, index: %ld\n", hash);
+				uint32_t* pti = (uint32_t*)(split_dwarf->sectiondata[IDX_debug_cu_index]->d_buf + 16 + 8 * slots);
+				uint32_t row_index = pti[hash] - 1;
+				printf("Match found in ht, index: %d\n", row_index);
+				uint32_t* tso = (uint32_t*)(split_dwarf->sectiondata[IDX_debug_cu_index]->d_buf + 16 + 12 * slots);
+				uint32_t* tss = tso + ((units + 1) * columns);
+
+				// one additional slot to avoid having to index -1 all the time
+				uint32_t sec_mapping[9];
+				memset(sec_mapping, UINT32_MAX, sizeof(sec_mapping));
+				for (uint32_t i = 0; i < columns; i++) {
+					sec_mapping[tso[i]] = i;
+				}
+				// TODO make sure this isn't out of bounds;
+				if (sec_mapping[DW_SECT_INFO] != UINT32_MAX
+					&& sec_mapping[DW_SECT_ABBREV] != UINT32_MAX) {
+					tso += columns * (row_index + 1);
+					uint32_t info_offset = tso[sec_mapping[DW_SECT_INFO]];
+					uint32_t abbrev_offset = tso[sec_mapping[DW_SECT_ABBREV]];
+					printf("Offsets: 0x%x, 0x%x\n", info_offset, abbrev_offset);
+					tss += columns * row_index;
+					uint32_t info_size = tss[sec_mapping[DW_SECT_INFO]];
+					uint32_t abbrev_size = tss[sec_mapping[DW_SECT_ABBREV]];
+					printf("Sizes: 0x%x, 0x%x\n", info_size, abbrev_size);
+				}
 			}
 		}
 
