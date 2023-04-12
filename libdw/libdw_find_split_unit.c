@@ -44,7 +44,7 @@
 void
 try_split_file (Dwarf_CU *cu, const char *dwo_path)
 {
-  if (strcmp(dwo_path, "/home/jgkamat/Sync/testdebug/test2.dwo") == 0) {
+  if (strcmp(dwo_path, "/home/jgkamat/Sync/testdebug/test2.dwo") == 0 || true) {
 	  printf("Overriding path to dwp: %s \n", dwo_path);
 	  dwo_path = "/home/jgkamat/Sync/testdebug/a.out.dwp";
   }
@@ -54,6 +54,9 @@ try_split_file (Dwarf_CU *cu, const char *dwo_path)
       Dwarf *split_dwarf = dwarf_begin (split_fd, DWARF_C_READ);
       if (split_dwarf != NULL)
 	{
+		uint32_t info_offset = UINT32_MAX;
+		uint32_t abbrev_offset = UINT32_MAX;
+		uint32_t str_offset = UINT32_MAX;
 
 		// Try to grab dwp sections
 		if (split_dwarf->sectiondata[IDX_debug_cu_index] != NULL){
@@ -89,24 +92,33 @@ try_split_file (Dwarf_CU *cu, const char *dwo_path)
 				}
 				// TODO make sure this isn't out of bounds;
 				if (sec_mapping[DW_SECT_INFO] != UINT32_MAX
-					&& sec_mapping[DW_SECT_ABBREV] != UINT32_MAX) {
+					&& sec_mapping[DW_SECT_ABBREV] != UINT32_MAX
+					&& sec_mapping[DW_SECT_STR_OFFSETS] != UINT32_MAX){
 					tso += columns * (row_index + 1);
-					uint32_t info_offset = tso[sec_mapping[DW_SECT_INFO]];
-					uint32_t abbrev_offset = tso[sec_mapping[DW_SECT_ABBREV]];
-					printf("Offsets: 0x%x, 0x%x\n", info_offset, abbrev_offset);
+					info_offset = tso[sec_mapping[DW_SECT_INFO]];
+					abbrev_offset = tso[sec_mapping[DW_SECT_ABBREV]];
+					str_offset = tso[sec_mapping[DW_SECT_STR_OFFSETS]];
+					printf("Offsets: 0x%x, 0x%x, 0x%x\n", info_offset, abbrev_offset, str_offset);
 					tss += columns * row_index;
 					uint32_t info_size = tss[sec_mapping[DW_SECT_INFO]];
 					uint32_t abbrev_size = tss[sec_mapping[DW_SECT_ABBREV]];
+					// uint32_t str_size = tss[sec_mapping[DW_SECT_STR_OFFSETS]];
 					printf("Sizes: 0x%x, 0x%x\n", info_size, abbrev_size);
 				}
 			}
 		}
 
+		if (abbrev_offset == UINT32_MAX)
+			abbrev_offset = 0;
+		if (str_offset == UINT32_MAX)
+			str_offset = 0;
 
 	  Dwarf_CU *split = NULL;
-	  while (dwarf_get_units (split_dwarf, split, &split,
-				  NULL, NULL, NULL, NULL) == 0)
+	  while (dwarf_get_units_adv (split_dwarf, split, &split,
+				      NULL, NULL, NULL, NULL, abbrev_offset) == 0)
 	    {
+
+			split->str_off_base = str_offset;
 			printf("Split: 0x%lx\n", split->unit_id8);
 	      if (split->unit_type == DW_UT_split_compile
 		  && cu->unit_id8 == split->unit_id8)

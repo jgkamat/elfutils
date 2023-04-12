@@ -664,6 +664,8 @@ extern struct Dwarf_CU *__libdw_intern_next_unit (Dwarf *dbg, bool debug_types)
 /* Find CU for given offset.  */
 extern struct Dwarf_CU *__libdw_findcu (Dwarf *dbg, Dwarf_Off offset, bool tu)
      __nonnull_attribute__ (1) internal_function;
+extern struct Dwarf_CU *__libdw_findcu_adv (Dwarf *dbg, Dwarf_Off offset, bool tu, Dwarf_Off ovr)
+     __nonnull_attribute__ (1) internal_function;
 
 /* Find CU for given DIE address.  */
 extern struct Dwarf_CU *__libdw_findcu_addr (Dwarf *dbg, void *addr)

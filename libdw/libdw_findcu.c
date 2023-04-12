@@ -97,7 +97,7 @@ __libdw_finddbg_cb (const void *arg1, const void *arg2)
 
 struct Dwarf_CU *
 internal_function
-__libdw_intern_next_unit (Dwarf *dbg, bool debug_types)
+__libdw_intern_next_unit_adv (Dwarf *dbg, bool debug_types, Dwarf_Off abbrev_offset_override)
 {
   Dwarf_Off *const offsetp
     = debug_types ? &dbg->next_tu_offset : &dbg->next_cu_offset;
@@ -156,7 +156,7 @@ __libdw_intern_next_unit (Dwarf *dbg, bool debug_types)
   newp->unit_id8 = unit_id8;
   newp->subdie_offset = subdie_offset;
   Dwarf_Abbrev_Hash_init (&newp->abbrev_hash, 41);
-  newp->orig_abbrev_offset = newp->last_abbrev_offset = abbrev_offset;
+  newp->orig_abbrev_offset = newp->last_abbrev_offset = abbrev_offset + abbrev_offset_override;
   newp->files = NULL;
   newp->lines = NULL;
   newp->locs = NULL;
@@ -224,9 +224,17 @@ __libdw_intern_next_unit (Dwarf *dbg, bool debug_types)
   return newp;
 }
 
+
 struct Dwarf_CU *
 internal_function
-__libdw_findcu (Dwarf *dbg, Dwarf_Off start, bool v4_debug_types)
+__libdw_intern_next_unit (Dwarf *dbg, bool debug_types)
+{
+	return __libdw_intern_next_unit_adv (dbg, debug_types, 0);
+}
+
+struct Dwarf_CU *
+internal_function
+__libdw_findcu_adv (Dwarf *dbg, Dwarf_Off start, bool v4_debug_types, Dwarf_Off abbrev_offset_override)
 {
   void **tree = v4_debug_types ? &dbg->tu_tree : &dbg->cu_tree;
   Dwarf_Off *next_offset
@@ -247,7 +255,7 @@ __libdw_findcu (Dwarf *dbg, Dwarf_Off start, bool v4_debug_types)
   /* No.  Then read more CUs.  */
   while (1)
     {
-      struct Dwarf_CU *newp = __libdw_intern_next_unit (dbg, v4_debug_types);
+		struct Dwarf_CU *newp = __libdw_intern_next_unit_adv (dbg, v4_debug_types, abbrev_offset_override);
       if (newp == NULL)
 	return NULL;
 
@@ -256,6 +264,13 @@ __libdw_findcu (Dwarf *dbg, Dwarf_Off start, bool v4_debug_types)
 	return newp;
     }
   /* NOTREACHED */
+}
+
+struct Dwarf_CU *
+internal_function
+__libdw_findcu (Dwarf *dbg, Dwarf_Off start, bool v4_debug_types)
+{
+	return __libdw_findcu_adv (dbg, start, v4_debug_types, 0);
 }
 
 struct Dwarf_CU *

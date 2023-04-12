@@ -36,9 +36,9 @@
 #include "libdwP.h"
 
 int
-dwarf_get_units (Dwarf *dwarf, Dwarf_CU *cu, Dwarf_CU **next_cu,
+dwarf_get_units_adv (Dwarf *dwarf, Dwarf_CU *cu, Dwarf_CU **next_cu,
 		 Dwarf_Half *version, uint8_t *unit_type,
-		 Dwarf_Die *cudie, Dwarf_Die *subdie)
+					 Dwarf_Die *cudie, Dwarf_Die *subdie, Dwarf_Off abbrev_offset_override)
 {
   /* Handle existing error.  */
   if (dwarf == NULL)
@@ -80,7 +80,7 @@ dwarf_get_units (Dwarf *dwarf, Dwarf_CU *cu, Dwarf_CU **next_cu,
 	  return 1;
     }
 
-  *next_cu = __libdw_findcu (dwarf, off, v4type);
+  *next_cu = __libdw_findcu_adv (dwarf, off, v4type, abbrev_offset_override);
   if (*next_cu == NULL)
     return -1;
 
@@ -128,4 +128,12 @@ dwarf_get_units (Dwarf *dwarf, Dwarf_CU *cu, Dwarf_CU **next_cu,
     }
 
   return 0;
+}
+
+
+int
+dwarf_get_units (Dwarf *dwarf, Dwarf_CU *cu, Dwarf_CU **next_cu,
+		 Dwarf_Half *version, uint8_t *unit_type,
+				 Dwarf_Die *cudie, Dwarf_Die *subdie) {
+	return dwarf_get_units_adv (dwarf, cu, next_cu, version, unit_type, cudie, subdie, 0);
 }

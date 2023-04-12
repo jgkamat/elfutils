@@ -300,6 +300,10 @@ extern int dwarf_get_units (Dwarf *dwarf, Dwarf_CU *cu, Dwarf_CU **next_cu,
 			    Dwarf_Half *version, uint8_t *unit_type,
 			    Dwarf_Die *cudie, Dwarf_Die *subdie)
      __nonnull_attribute__ (3);
+extern int dwarf_get_units_adv (Dwarf *dwarf, Dwarf_CU *cu, Dwarf_CU **next_cu,
+			    Dwarf_Half *version, uint8_t *unit_type,
+								Dwarf_Die *cudie, Dwarf_Die *subdie, Dwarf_Off ovr)
+     __nonnull_attribute__ (3);
 
 /* Provides information and DIEs associated with the given Dwarf_CU
    unit.  Returns -1 on error, zero on success. Arguments not needed
