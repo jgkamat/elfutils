@@ -60,3 +60,13 @@ dwarf_cu_die (Dwarf_CU *cu, Dwarf_Die *result, Dwarf_Half *versionp,
 
   return result;
 }
+
+extern Dwarf_Off dwarf_cu_str_off (Dwarf_CU *cu)
+{
+  if (cu == NULL)
+    return 0;
+  if (cu->str_off_base == (Dwarf_Off)-1) {
+    return 0;
+  }
+  return cu->str_off_base;
+}

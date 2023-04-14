@@ -115,8 +115,8 @@ try_split_file (Dwarf_CU *cu, const char *dwo_path)
 				      NULL, NULL, NULL, NULL, abbrev_offset) == 0)
 	    {
 
-			split->str_off_base = str_offset;
-			printf("Split: 0x%lx\n", split->unit_id8);
+	      split->str_off_base = str_offset;
+	      printf("Split: 0x%lx\n", split->unit_id8);
 	      if (split->unit_type == DW_UT_split_compile
 		  && cu->unit_id8 == split->unit_id8)
 		{

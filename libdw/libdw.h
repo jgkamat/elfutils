@@ -317,6 +317,9 @@ extern int dwarf_cu_info (Dwarf_CU *cu,
 			  uint64_t *unit_id,
 			  uint8_t *address_size, uint8_t *offset_size);
 
+extern Dwarf_Off dwarf_cu_str_off (Dwarf_CU *cu);
+
+
 /* Decode one DWARF CFI entry (CIE or FDE) from the raw section data.
    The E_IDENT from the originating ELF file indicates the address
    size and byte order used in the CFI section contained in DATA;
